@@ -30,5 +30,7 @@ Python Application for to capture image using Camera then apply OCR to recognize
       > Check the Anaconda Prompt for details about Text Found
       > Only do the speech if visible text found in the picture.
 
+pip install --upgrade gtts gtts-token
+
 
 
