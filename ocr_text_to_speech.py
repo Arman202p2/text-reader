@@ -53,7 +53,7 @@ class RecordVideo(QtCore.QObject):
             text=pytesseract.image_to_string(img, lang='spa', config=tessdata_dir_config)
             print ('Text_Found: ',text,len(text))
             if len(text)>0:
-                tts = gTTS(text=text, lang='ES')# for english language use (lang='en')
+                tts = gTTS(text=text, lang='en')# for english language use (lang='en')
                 tts.save("pcvoice.mp3")
                 os.system("start pcvoice.mp3")
 
@@ -141,3 +141,4 @@ def main():
 if __name__ == '__main__':
 
     main()
+
