@@ -13,6 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # 5️⃣ Copy backend and frontend code
 COPY backend/ ./backend
+COPY frontend/ ./frontend
 
 # 6️⃣ Expose Render port (Render injects PORT=10000 internally)
 EXPOSE 8080
