@@ -1,10 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR to Speech</title>
+    <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.container {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+h2 {
+    color: #1e293b;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.subtitle {
+    color: #64748b;
+    text-align: center;
+    margin-bottom: 32px;
+    font-size: 15px;
+}
+</style>
+</head>
 <body>
-    <h2>OCR to Speech Web App</h2>
-    <input type="file" id="file" accept="image/*">
-    <button onclick="upload()">Convert</button>
-    <audio id="audio" controls style="display:none"></audio>
+    <div class="container">
+        <h2>OCR to Speech</h2>
+        <p class="subtitle">Transform images into spoken words</p>
+        <input type="file" id="file" accept="image/*">
+        <button onclick="upload()">Convert</button>
+        <audio id="audio" controls style="display:none"></audio>
+    </div>
     <script>
     async function upload() {
         let fileInput = document.getElementById('file');
@@ -21,5 +71,44 @@
         }
     }
     </script>
+    <!-- Add this button to your frontend -->
+<button class="camera-btn" onclick="openCamera()"> Use Camera Instead</button>
+
+<video id="video" style="display:none; width: 100%; border-radius: 12px;"></video>
+<button id="captureBtn" style="display:none;" onclick="captureImage()">Capture & Convert</button>
+
+<script>
+let stream;
+
+async function openCamera() {
+    const video = document.getElementById('video');
+    const captureBtn = document.getElementById('captureBtn');
+    
+    stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
+    video.style.display = 'block';
+    captureBtn.style.display = 'block';
+    video.play();
+}
+
+function captureImage() {
+    const video = document.getElementById('video');
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    
+    canvas.toBlob(async (blob) => {
+        const form = new FormData();
+        form.append('file', blob, 'camera-capture.png');
+        
+        let res = await fetch('/ocr-tts/', { method: 'POST', body: form });
+        if (res.ok) {
+            document.getElementById('audio').src = URL.createObjectURL(await res.blob());
+            document.getElementById('audio').style.display = 'block';
+        }
+    });
+}
+</script>
 </body>
 </html>
