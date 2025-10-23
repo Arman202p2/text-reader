@@ -10,7 +10,7 @@ from fastapi.responses import Response
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 import tempfile
-
+from pathlib import Path
 
 load_dotenv()  # loads variables from .env file
 
@@ -32,7 +32,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 # Path to the frontend index.html
-frontend_index = "backend/frontend/index.html"
+frontend_index = Path(__file__).parent / "frontend" / "index.html"
+
 
 @app.get("/", response_class=HTMLResponse)
 def home():
