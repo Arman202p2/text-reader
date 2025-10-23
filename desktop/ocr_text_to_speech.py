@@ -18,7 +18,7 @@ import os
 load_dotenv()  # loads variables from .env file
 
 tesseract_path = os.getenv("TESSERACT_PATH", "/usr/bin/tesseract")
-tessdata_dir_path = os.getenv("TESSERACT_LANG_DATA_PATH", "/usr/share/tesseract-ocr/tessdata")
+tessdata_dir_path = os.getenv("TESSERACT_LANG_DATA_PATH", "/usr/share/tessdata")
 
 #pytesseract.pytesseract.TesseractNotFoundError: tesseract is not installed or it's not in your path
 pytesseract.pytesseract.tesseract_cmd = tesseract_path
