@@ -11,7 +11,7 @@
         if (!fileInput.files.length) { alert("Select an image"); return; }
         let form = new FormData();
         form.append('file', fileInput.files[0]);
-        let res = await fetch('http://localhost:8000/ocr-tts/', { method: 'POST', body: form });
+        let res = await fetch('/ocr-tts/', { method: 'POST', body: form });
         if (res.ok) {
             let audio = document.getElementById('audio');
             audio.src = URL.createObjectURL(await res.blob());

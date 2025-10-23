@@ -8,6 +8,7 @@ import os
 from dotenv import load_dotenv
 from fastapi.responses import Response
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 load_dotenv()  # loads variables from .env file
 
@@ -22,15 +23,13 @@ app = FastAPI()
 # Allow frontend to access backend from browser
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify your frontend domain instead of "*"
+    allow_origins=[os.getenv("FRONTEND_URL")],  # In production, specify your frontend domain instead of "*"
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-frontend_path = os.path.join(os.path.dirname(__file__), "../frontend/index.html")
-@app.get("/", response_class=HTMLResponse)
-def home():
-    return FileResponse(frontend_path)
+
+app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
 
 # Serve a default favicon (16x16 blank icon)
 @app.get("/favicon.ico")
@@ -44,12 +43,14 @@ async def favicon():
 @app.post("/ocr-tts/")
 async def ocr_tts(file: UploadFile = File(...)):
     contents = await file.read()
-    with open("temp.png", "wb") as f:
+    temp_file = "/tmp/temp.png"
+    audio_file = "/tmp/voice.mp3"
+    with open(temp_file, "wb") as f:
         f.write(contents)
-    img = Image.open("temp.png")
+    img = Image.open(temp_file)
     text = pytesseract.image_to_string(img)
     if not text.strip():
         return {"error": "No text found"}
     tts = gTTS(text=text, lang='en')
-    tts.save("voice.mp3")
-    return FileResponse("voice.mp3", media_type="audio/mpeg", filename="voice.mp3")
+    tts.save(audio_file)
+    return FileResponse(audio_file, media_type="audio/mpeg", filename="voice.mp3")
