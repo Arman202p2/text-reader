@@ -14,11 +14,12 @@ from pathlib import Path
 
 load_dotenv()  # loads variables from .env file
 
-tesseract_path = os.getenv("TESSERACT_PATH")
-tessdata_dir_path = os.getenv("TESSERACT_LANG_DATA_PATH")
+tesseract_path = os.getenv("TESSERACT_PATH", "/usr/bin/tesseract")
+tessdata_dir_path = os.getenv("TESSERACT_LANG_DATA_PATH", "/usr/share/tesseract-ocr/4.00/tessdata")
 
 #pytesseract.pytesseract.TesseractNotFoundError: tesseract is not installed or it's not in your path
 pytesseract.pytesseract.tesseract_cmd = tesseract_path
+custom_config = f'--tessdata-dir "{tessdata_dir_path}"' if tessdata_dir_path else ""
 
 app = FastAPI()
 
@@ -26,7 +27,7 @@ app.mount("/static", StaticFiles(directory=Path(__file__).parent / "frontend", h
 # Allow frontend to access backend from browser
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv("FRONTEND_URL")],  # In production, specify your frontend domain instead of "*"
+    allow_origins=[os.getenv("FRONTEND_URL") or "*"],  # In production, specify your frontend domain instead of "*"
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -50,15 +51,18 @@ async def favicon():
 
 @app.post("/ocr-tts/")
 async def ocr_tts(file: UploadFile = File(...)):
-    contents = await file.read()
-    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp_img:
-     tmp_img.write(contents)
-     temp_file = tmp_img.name
-     audio_file = temp_file.replace(".png", ".mp3")
-    img = Image.open(temp_file)
-    text = pytesseract.image_to_string(img)
-    if not text.strip():
-        return {"error": "No text found"}
-    tts = gTTS(text=text, lang='en')
-    tts.save(audio_file)
-    return FileResponse(audio_file, media_type="audio/mpeg", filename="voice.mp3")
+    try:
+        contents = await file.read()
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp_img:
+            tmp_img.write(contents)
+            temp_file = tmp_img.name
+            audio_file = temp_file.replace(".png", ".mp3")
+        img = Image.open(temp_file)
+        text = pytesseract.image_to_string(img, config=custom_config)
+        if not text.strip():
+            return {"error": "No text found"}
+        tts = gTTS(text=text, lang='en')
+        tts.save(audio_file)
+        return FileResponse(audio_file, media_type="audio/mpeg", filename="voice.mp3")
+    except Exception as e:
+        return {"error": str(e)}
