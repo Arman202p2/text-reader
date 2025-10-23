@@ -27,22 +27,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+frontend_path = os.path.join(os.path.dirname(__file__), "../frontend/index.html")
 @app.get("/", response_class=HTMLResponse)
 def home():
-    return """
-    <html>
-        <head>
-            <title>Text Reader</title>
-        </head>
-        <body style="font-family: Arial; text-align: center; margin-top: 50px;">
-            <h1>🧠 Text Reader API</h1>
-            <p>Upload an image at <code>/ocr-tts/</code> using POST to get text-to-speech audio.</p>
-        </body>
-    </html>
-    """
-
-app = FastAPI()
+    return FileResponse(frontend_path)
 
 # Serve a default favicon (16x16 blank icon)
 @app.get("/favicon.ico")
