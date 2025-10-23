@@ -6,12 +6,18 @@ RUN apt-get update && apt-get install -y \
     tesseract-ocr \
     tesseract-ocr-eng \
     libtesseract-dev \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
-# Set TESSDATA_PREFIX for tesseract
-ENV TESSDATA_PREFIX=/usr/share/tessdata
+# Create custom tessdata directory
+RUN mkdir -p /app/tessdata
+
+# Download English trained data to custom location
+RUN wget https://github.com/tesseract-ocr/tessdata/raw/main/eng.traineddata -P /app/tessdata
+# Set TESSDATA_PREFIX to custom location
+ENV TESSDATA_PREFIX=/app/tessdata
 # After tesseract installation, add:
-RUN ls -la /usr/share/tessdata/
+RUN ls -la /app/tessdata/
 # Set workdir
 WORKDIR /app
 
