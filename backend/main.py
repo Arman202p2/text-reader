@@ -22,7 +22,7 @@ pytesseract.pytesseract.tesseract_cmd = tesseract_path
 
 app = FastAPI()
 
-app.mount("/static", StaticFiles(directory="../frontend", html=True), name="frontend")
+app.mount("/static", StaticFiles(directory="frontend", html=True), name="frontend")
 # Allow frontend to access backend from browser
 app.add_middleware(
     CORSMiddleware,
@@ -32,7 +32,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 # Path to the frontend index.html
-frontend_index = "../frontend/index.html"
+frontend_index = "backend/frontend/index.html"
 
 @app.get("/", response_class=HTMLResponse)
 def home():
