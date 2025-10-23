@@ -6,6 +6,8 @@ import pytesseract
 from gtts import gTTS
 import os
 from dotenv import load_dotenv
+from fastapi.responses import Response
+from fastapi.responses import HTMLResponse
 
 load_dotenv()  # loads variables from .env file
 
@@ -25,7 +27,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-from fastapi.responses import HTMLResponse
 
 @app.get("/", response_class=HTMLResponse)
 def home():
@@ -40,6 +41,17 @@ def home():
         </body>
     </html>
     """
+
+app = FastAPI()
+
+# Serve a default favicon (16x16 blank icon)
+@app.get("/favicon.ico")
+async def favicon():
+    # A tiny transparent 16x16 favicon in bytes
+    favicon_bytes = bytes.fromhex(
+        "00000100010010100000010010000000000100000001000000000000000000000000000000"
+    )
+    return Response(content=favicon_bytes, media_type="image/x-icon")
 
 @app.post("/ocr-tts/")
 async def ocr_tts(file: UploadFile = File(...)):
