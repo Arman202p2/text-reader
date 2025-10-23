@@ -9,6 +9,8 @@ from dotenv import load_dotenv
 from fastapi.responses import Response
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
+import tempfile
+
 
 load_dotenv()  # loads variables from .env file
 
@@ -20,6 +22,7 @@ pytesseract.pytesseract.tesseract_cmd = tesseract_path
 
 app = FastAPI()
 
+app.mount("/static", StaticFiles(directory="../frontend", html=True), name="frontend")
 # Allow frontend to access backend from browser
 app.add_middleware(
     CORSMiddleware,
@@ -28,8 +31,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# Path to the frontend index.html
+frontend_index = "../frontend/index.html"
 
-app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
+@app.get("/", response_class=HTMLResponse)
+def home():
+    return FileResponse(frontend_index)
 
 # Serve a default favicon (16x16 blank icon)
 @app.get("/favicon.ico")
@@ -43,10 +50,10 @@ async def favicon():
 @app.post("/ocr-tts/")
 async def ocr_tts(file: UploadFile = File(...)):
     contents = await file.read()
-    temp_file = "/tmp/temp.png"
-    audio_file = "/tmp/voice.mp3"
-    with open(temp_file, "wb") as f:
-        f.write(contents)
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp_img:
+     tmp_img.write(contents)
+     temp_file = tmp_img.name
+     audio_file = temp_file.replace(".png", ".mp3")
     img = Image.open(temp_file)
     text = pytesseract.image_to_string(img)
     if not text.strip():
