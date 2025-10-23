@@ -22,7 +22,7 @@ if platform.system() == "Windows":
     tessdata_dir_path = os.getenv("TESSERACT_LANG_DATA_PATH", r"C:\Program Files\Tesseract-OCR\tessdata")
 else:
     tesseract_path = os.getenv("TESSERACT_PATH", "/usr/bin/tesseract")
-    tessdata_dir_path = os.getenv("TESSERACT_LANG_DATA_PATH", "/usr/share/tesseract-ocr/4.00/tessdata")
+    tessdata_dir_path = os.getenv("TESSERACT_LANG_DATA_PATH", "/usr/share/tesseract-ocr/tessdata")
 print("Running on:", platform.system())
 print("Tesseract path:", tesseract_path)
 print("Tessdata path:", tessdata_dir_path)
