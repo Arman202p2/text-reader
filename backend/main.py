@@ -14,6 +14,9 @@ from pathlib import Path
 import platform
 load_dotenv()  # loads variables from .env file
 
+PORT = int(os.getenv("PORT", 8080))
+
+
 if platform.system() == "Windows":
     tesseract_path = os.getenv("TESSERACT_PATH", r"C:\Program Files\Tesseract-OCR\tesseract.exe")
     tessdata_dir_path = os.getenv("TESSERACT_LANG_DATA_PATH", r"C:\Program Files\Tesseract-OCR\tessdata")

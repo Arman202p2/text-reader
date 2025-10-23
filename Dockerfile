@@ -1,24 +1,30 @@
-# 1️⃣ Base image
+# Base image
 FROM python:3.13-slim
 
-# 2️⃣ Install system packages (Tesseract + dependencies)
-RUN apt-get update && \
-    apt-get install -y tesseract-ocr libtesseract-dev tesseract-ocr-eng && \
-    rm -rf /var/lib/apt/lists/*
+# Install Tesseract OCR and dependencies
+RUN apt-get update && apt-get install -y \
+    tesseract-ocr \
+    libtesseract-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# 3️⃣ Set working directory
+# Set TESSDATA_PREFIX for tesseract
+ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata
+
+# Set workdir
 WORKDIR /app
 
-# 4️⃣ Copy and install Python dependencies
+# Copy backend and frontend
+COPY backend/ ./backend
+COPY backend/frontend ./frontend 
+COPY frontend/ ./frontend
+
+# Install Python dependencies
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 5️⃣ Copy backend and frontend code
-COPY backend/ ./backend
-COPY frontend/ ./frontend
-
-# 6️⃣ Expose Render port (Render injects PORT=10000 internally)
+# Expose port (Railway uses PORT env variable)
+ENV PORT=8080
 EXPOSE 8080
 
-# 7️⃣ Run FastAPI app
+# Start the FastAPI app
 CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8080"]
