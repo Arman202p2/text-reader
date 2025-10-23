@@ -11,11 +11,18 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 import tempfile
 from pathlib import Path
-
+import platform
 load_dotenv()  # loads variables from .env file
 
-tesseract_path = os.getenv("TESSERACT_PATH", "/usr/bin/tesseract")
-tessdata_dir_path = os.getenv("TESSERACT_LANG_DATA_PATH", "/usr/share/tesseract-ocr/4.00/tessdata")
+if platform.system() == "Windows":
+    tesseract_path = os.getenv("TESSERACT_PATH", r"C:\Program Files\Tesseract-OCR\tesseract.exe")
+    tessdata_dir_path = os.getenv("TESSERACT_LANG_DATA_PATH", r"C:\Program Files\Tesseract-OCR\tessdata")
+else:
+    tesseract_path = os.getenv("TESSERACT_PATH", "/usr/bin/tesseract")
+    tessdata_dir_path = os.getenv("TESSERACT_LANG_DATA_PATH", "/usr/share/tesseract-ocr/4.00/tessdata")
+print("Running on:", platform.system())
+print("Tesseract path:", tesseract_path)
+print("Tessdata path:", tessdata_dir_path)
 
 #pytesseract.pytesseract.TesseractNotFoundError: tesseract is not installed or it's not in your path
 pytesseract.pytesseract.tesseract_cmd = tesseract_path
