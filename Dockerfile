@@ -4,11 +4,12 @@ FROM python:3.13-slim
 # Install Tesseract OCR and dependencies
 RUN apt-get update && apt-get install -y \
     tesseract-ocr \
+    tesseract-ocr-eng \
     libtesseract-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Set TESSDATA_PREFIX for tesseract
-ENV TESSDATA_PREFIX=/usr/share/tessdata
+ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata
 
 # Set workdir
 WORKDIR /app
