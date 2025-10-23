@@ -24,7 +24,7 @@ tessdata_dir_path = os.getenv("TESSERACT_LANG_DATA_PATH")
 pytesseract.pytesseract.tesseract_cmd = tesseract_path
 
 #tessdata_dir_config = r'--tessdata-dir "<replace_with_your_tessdata_dir_path>"'
-tessdata_dir_config = r'--tessdata-dir ' + tessdata_dir_path
+tessdata_dir_config = f'--tessdata-dir "{tessdata_dir_path}"'
 
 
 
