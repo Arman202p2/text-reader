@@ -9,8 +9,9 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Set TESSDATA_PREFIX for tesseract
-ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata
-
+ENV TESSDATA_PREFIX=/usr/share/tessdata
+# After tesseract installation, add:
+RUN ls -la /usr/share/tessdata/
 # Set workdir
 WORKDIR /app
 
