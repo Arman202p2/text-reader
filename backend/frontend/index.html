@@ -45,70 +45,181 @@ h2 {
     margin-bottom: 32px;
     font-size: 15px;
 }
+
+select {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+    color: #1e293b;
+}
+
+input[type="file"] {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+}
+
+button {
+    width: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    transition: transform 0.3s ease;
+    margin-bottom: 10px;
+}
+
+button:hover {
+    transform: translateY(-2px);
+}
+
+#captureBtn {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+video {
+    width: 100%;
+    border-radius: 12px;
+    margin: 15px 0;
+}
+
+audio {
+    width: 100%;
+    margin-top: 20px;
+    border-radius: 8px;
+}
+/*loading*/
+button.loading {
+    color: transparent;
+    position: relative;
+}
+
+button.loading::after {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    margin: -10px 0 0 -10px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 </style>
 </head>
 <body>
     <div class="container">
         <h2>OCR to Speech</h2>
+        <select id="language">
+            <option value="eng">English</option>
+            <option value="spa">Spanish</option>
+            <option value="fra">French</option>
+            <option value="deu">German</option>
+        </select>
         <p class="subtitle">Transform images into spoken words</p>
         <input type="file" id="file" accept="image/*">
         <button onclick="upload()">Convert</button>
+        
+
+        <button class="camera-btn" onclick="openCamera()"> Use Camera Instead</button>
+        <video id="video" style="display:none; width: 100%; border-radius: 12px;"></video>
+        <button id="captureBtn" style="display:none;" onclick="captureImage()">Capture & Convert</button>
+        
         <audio id="audio" controls style="display:none"></audio>
     </div>
     <script>
+    let stream;
     async function upload() {
-        let fileInput = document.getElementById('file');
-        if (!fileInput.files.length) { alert("Select an image"); return; }
-        let form = new FormData();
-        form.append('file', fileInput.files[0]);
-        let res = await fetch('/ocr-tts/', { method: 'POST', body: form });
-        if (res.ok) {
-            let audio = document.getElementById('audio');
-            audio.src = URL.createObjectURL(await res.blob());
-            audio.style.display = "block";
-        } else {
-            alert("No text found or server error!");
+            let fileInput = document.getElementById('file');
+            let btn = event.target;
+            if (!fileInput.files.length) { alert("Select an image"); return; }
+            
+            btn.classList.add('loading');
+            btn.disabled = true;
+
+            let form = new FormData();
+            form.append('file', fileInput.files[0]);
+            let res = await fetch('/ocr-tts/', { method: 'POST', body: form });
+
+            btn.classList.remove('loading');
+            btn.disabled = false;
+            if (res.ok) {
+                let audio = document.getElementById('audio');
+                audio.src = URL.createObjectURL(await res.blob());
+                audio.style.display = "block";
+            } else {
+                alert("No text found or server error!");
+            }
         }
-    }
+
+        async function openCamera() {
+            const video = document.getElementById('video');
+            const captureBtn = document.getElementById('captureBtn');
+            
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            video.style.display = 'block';
+            captureBtn.style.display = 'block';
+            video.play();
+        }
+
+        function captureImage() {
+            const video = document.getElementById('video');
+            const btn = document.getElementById('captureBtn');
+            const canvas = document.createElement('canvas');
+
+            btn.classList.add('loading');
+            btn.disabled = true;
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            canvas.toBlob(async (blob) => {
+                const form = new FormData();
+                form.append('file', blob, 'camera-capture.png');
+                
+                let res = await fetch('/ocr-tts/', { method: 'POST', body: form });
+
+                btn.classList.remove('loading');
+                btn.disabled = false;
+                
+                if (res.ok) {
+                    document.getElementById('audio').src = URL.createObjectURL(await res.blob());
+                    document.getElementById('audio').style.display = 'block';
+                } else {
+                    alert("No text found!");
+                }
+            });
+        }
     </script>
-    <!-- Add this button to your frontend -->
-<button class="camera-btn" onclick="openCamera()"> Use Camera Instead</button>
-
-<video id="video" style="display:none; width: 100%; border-radius: 12px;"></video>
-<button id="captureBtn" style="display:none;" onclick="captureImage()">Capture & Convert</button>
-
-<script>
-let stream;
-
-async function openCamera() {
-    const video = document.getElementById('video');
-    const captureBtn = document.getElementById('captureBtn');
-    
-    stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    video.srcObject = stream;
-    video.style.display = 'block';
-    captureBtn.style.display = 'block';
-    video.play();
-}
-
-function captureImage() {
-    const video = document.getElementById('video');
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video, 0, 0);
-    
-    canvas.toBlob(async (blob) => {
-        const form = new FormData();
-        form.append('file', blob, 'camera-capture.png');
-        
-        let res = await fetch('/ocr-tts/', { method: 'POST', body: form });
-        if (res.ok) {
-            document.getElementById('audio').src = URL.createObjectURL(await res.blob());
-            document.getElementById('audio').style.display = 'block';
-        }
-    });
-}
-</script>
 </body>
 </html>
