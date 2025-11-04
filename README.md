@@ -1,4 +1,6 @@
 # Python-Application-for-Camera-OCR-then-text-to-speech
+"Try the website https://text-reader-production.up.railway.app/"
+
 Python Application for to capture image using Camera then apply OCR to recognize the text,then text to speech audio. This program made for spanish language ocr and spanish language text to speech. With little change in language in code you can run on other languages.
 
 
@@ -37,6 +39,7 @@ GitHub: [Arman202p2](https://github.com/Arman202p2)
 
 
 pip install --upgrade gtts gtts-token
+
 
 
 
