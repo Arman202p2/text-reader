@@ -7,6 +7,7 @@ import numpy as np
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 from PyQt5 import QtGui
+from PyQt5.QtWidgets import QMessageBox
 
 import pytesseract
 from PIL import Image
@@ -17,8 +18,8 @@ import os
 
 load_dotenv()  # loads variables from .env file
 
-tesseract_path = os.getenv("TESSERACT_PATH", "/usr/bin/tesseract")
-tessdata_dir_path = os.getenv("TESSERACT_LANG_DATA_PATH", "/usr/share/tessdata")
+tesseract_path = os.getenv("TESSERACT_PATH", "C:\\Program Files\\Tesseract-OCR\\tesseract.exe")
+tessdata_dir_path = os.getenv("TESSERACT_LANG_DATA_PATH", "C:\\Program Files\\Tesseract-OCR\\tessdata")
 
 #pytesseract.pytesseract.TesseractNotFoundError: tesseract is not installed or it's not in your path
 pytesseract.pytesseract.tesseract_cmd = tesseract_path
@@ -49,19 +50,52 @@ class RecordVideo(QtCore.QObject):
         if read:
             self.image_data.emit(data)
     def framesave(self):
-        
+        save_path = os.path.join(os.path.expanduser("~"), "Documents", "a.png")
+
         read, data = self.camera.read()
         if read:
-            cv2.imwrite('a.png',data)
-            img=Image.fromarray(data)
+            result=cv2.imwrite(save_path, data)
+            if not result:
+                msg = QMessageBox()
+                msg.setText(f"Failed to save image at {save_path}")
+                msg.exec_()
+                return
+        try:
+            img = Image.fromarray(cv2.cvtColor(data, cv2.COLOR_BGR2RGB))
             img.load()
+        except Exception as e:
+            msg = QMessageBox()
+            msg.setText(f"Image conversion failed: {e}")
+            msg.exec_()
+            return
+
+        try:
+            text = pytesseract.image_to_string(img, lang='eng', config=tessdata_dir_config)
+        except Exception as e:
+            msg = QMessageBox()
+            msg.setText(f"OCR failed: {e}")
+            msg.exec_()
+            return
+        
+        msg = QMessageBox()
+        msg.setText(f"Text Found: {text}\nLength: {len(text)}")
+        msg.exec_()
+        print('Text_Found: ', text, len(text))
+        if len(text) > 0:
+            try:
+                tts = gTTS(text=text, lang='en')  # for english language use (lang='en')
+                tts.save(os.path.join(os.path.expanduser("~"), "Documents", "pcvoice.mp3"))
+                os.startfile(os.path.join(os.path.expanduser("~"), "Documents", "pcvoice.mp3"))
+            except Exception as e:
+                msg = QMessageBox()
+                msg.setText(f"TTS or playback failed: {e}")
+                msg.exec_()
+        else:
+            # 2. Output visibility: Message box for "No text found"
+            msg = QMessageBox()
+            msg.setText("No text found in image.")
+            msg.exec_()
             
-            text=pytesseract.image_to_string(img, lang='spa', config=tessdata_dir_config)
-            print ('Text_Found: ',text,len(text))
-            if len(text)>0:
-                tts = gTTS(text=text, lang='en')# for english language use (lang='en')
-                tts.save("pcvoice.mp3")
-                os.system("start pcvoice.mp3")
 
 
 class FaceDetectionWidget(QtWidgets.QWidget):

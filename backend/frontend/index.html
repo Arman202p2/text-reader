@@ -46,6 +46,19 @@ h2 {
     font-size: 15px;
 }
 
+.select-label {
+    display: block;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    margin-top: 12px;
+}
+
+.select-label:first-of-type {
+    margin-top: 0;
+}
+
 select {
     width: 100%;
     padding: 12px;
@@ -57,6 +70,68 @@ select {
     background: white;
     cursor: pointer;
     color: #1e293b;
+}
+
+select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.translation-indicator {
+    display: none;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    text-align: center;
+    margin-bottom: 16px;
+    font-weight: 500;
+}
+
+.translation-indicator.show {
+    display: block;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.text-display {
+    display: none;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 16px 0;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.text-display.show {
+    display: block;
+}
+
+.text-display h3 {
+    font-size: 13px;
+    color: #475569;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.text-display p {
+    font-size: 14px;
+    color: #1e293b;
+    line-height: 1.6;
 }
 
 input[type="file"] {
@@ -138,16 +213,51 @@ button:disabled {
 <body>
     <div class="container">
         <h2>OCR to Speech</h2>
-        <select id="language">
+        <p class="subtitle">Transform images into spoken words</p>
+         <label class="select-label">Source Language (OCR)</label>
+        <select id="sourceLanguage">
             <option value="eng">English</option>
             <option value="spa">Spanish</option>
             <option value="fra">French</option>
             <option value="deu">German</option>
+            <option value="ita">Italian</option>
+            <option value="por">Portuguese</option>
+            <option value="rus">Russian</option>
+            <option value="jpn">Japanese</option>
+            <option value="chi_sim">Chinese (Simplified)</option>
+            <option value="ara">Arabic</option>
+            <option value="hin">Hindi</option>
         </select>
-        <p class="subtitle">Transform images into spoken words</p>
+        <label class="select-label">Target Language (Speech)</label>
+        <select id="targetLanguage">
+            <option value="en">English</option>
+            <option value="es">Spanish</option>
+            <option value="fr">French</option>
+            <option value="de">German</option>
+            <option value="it">Italian</option>
+            <option value="pt">Portuguese</option>
+            <option value="ru">Russian</option>
+            <option value="ja">Japanese</option>
+            <option value="zh">Chinese</option>
+            <option value="ar">Arabic</option>
+            <option value="hi">Hindi</option>
+        </select>
+
+        <div id="translationIndicator" class="translation-indicator">
+            🌐 Translation will be applied
+        </div>
+
         <input type="file" id="file" accept="image/*">
         <button onclick="upload()">Convert</button>
         
+        <div id="extractedText" class="text-display">
+            <h3>Extracted Text:</h3>
+            <p id="extractedTextContent"></p>
+        </div>
+        <div id="translatedText" class="text-display">
+            <h3>Translated Text:</h3>
+            <p id="translatedTextContent"></p>
+        </div>
 
         <button class="camera-btn" onclick="openCamera()"> Use Camera Instead</button>
         <video id="video" style="display:none; width: 100%; border-radius: 12px;"></video>
@@ -157,6 +267,32 @@ button:disabled {
     </div>
     <script>
     let stream;
+    const langMapping = {
+        'eng': 'en',
+        'spa': 'es',
+        'fra': 'fr',
+        'deu': 'de',
+        'ita': 'it',
+        'por': 'pt',
+        'rus': 'ru',
+        'jpn': 'ja',
+        'chi_sim': 'zh',
+        'ara': 'ar',
+        'hin': 'hi'
+    };
+
+    function checkTranslation() {
+        const sourceLanguage = document.getElementById('sourceLanguage').value;
+        const targetLanguage = document.getElementById('targetLanguage').value;
+        const indicator = document.getElementById('translationIndicator');
+        
+        // Convert source language to TTS format and compare
+        if (langMapping[sourceLanguage] !== targetLanguage) {
+            indicator.classList.add('show');
+        } else {
+            indicator.classList.remove('show');
+        }
+    }
     async function upload() {
             let fileInput = document.getElementById('file');
             let btn = event.target;
@@ -167,14 +303,51 @@ button:disabled {
 
             let form = new FormData();
             form.append('file', fileInput.files[0]);
+
+            const sourceLanguage = document.getElementById('sourceLanguage').value;
+            const targetLanguage = document.getElementById('targetLanguage').value;
+            form.append('source_lang', sourceLanguage);
+            form.append('target_lang', targetLanguage);
+
+            const needsTranslation = langMapping[sourceLanguage] !== targetLanguage;
+            form.append('translate', needsTranslation ? 'true' : 'false');
+            
             let res = await fetch('/ocr-tts/', { method: 'POST', body: form });
 
             btn.classList.remove('loading');
             btn.disabled = false;
-            if (res.ok) {
-                let audio = document.getElementById('audio');
-                audio.src = URL.createObjectURL(await res.blob());
-                audio.style.display = "block";
+                if (res.ok) {
+                const contentType = res.headers.get('content-type');
+                
+                if (contentType && contentType.includes('application/json')) {
+                    const data = await res.json();
+                    
+                    // Show extracted text
+                    if (data.extracted_text) {
+                        document.getElementById('extractedTextContent').textContent = data.extracted_text;
+                        document.getElementById('extractedText').classList.add('show');
+                    }
+                    
+                    // Show translated text if translation occurred
+                    if (data.translated_text && needsTranslation) {
+                        document.getElementById('translatedTextContent').textContent = data.translated_text;
+                        document.getElementById('translatedText').classList.add('show');
+                    } else {
+                        document.getElementById('translatedText').classList.remove('show');
+                    }
+                    
+                    // Play audio if available
+                    if (data.audio_url) {
+                        let audio = document.getElementById('audio');
+                        audio.src = data.audio_url;
+                        audio.style.display = "block";
+                    }
+                } else {
+                    // Fallback for audio-only response
+                    let audio = document.getElementById('audio');
+                    audio.src = URL.createObjectURL(await res.blob());
+                    audio.style.display = "block";
+                }
             } else {
                 alert("No text found or server error!");
             }
@@ -206,6 +379,14 @@ button:disabled {
             canvas.toBlob(async (blob) => {
                 const form = new FormData();
                 form.append('file', blob, 'camera-capture.png');
+
+                const sourceLanguage = document.getElementById('sourceLanguage').value;
+            const targetLanguage = document.getElementById('targetLanguage').value;
+            form.append('source_lang', sourceLanguage);
+            form.append('target_lang', targetLanguage);
+            
+            const needsTranslation = langMapping[sourceLanguage] !== targetLanguage;
+            form.append('translate', needsTranslation ? 'true' : 'false');
                 
                 let res = await fetch('/ocr-tts/', { method: 'POST', body: form });
 
@@ -213,13 +394,37 @@ button:disabled {
                 btn.disabled = false;
                 
                 if (res.ok) {
+                const contentType = res.headers.get('content-type');
+                
+                if (contentType && contentType.includes('application/json')) {
+                    const data = await res.json();
+                    
+                    if (data.extracted_text) {
+                        document.getElementById('extractedTextContent').textContent = data.extracted_text;
+                        document.getElementById('extractedText').classList.add('show');
+                    }
+                    
+                    if (data.translated_text && needsTranslation) {
+                        document.getElementById('translatedTextContent').textContent = data.translated_text;
+                        document.getElementById('translatedText').classList.add('show');
+                    } else {
+                        document.getElementById('translatedText').classList.remove('show');
+                    }
+                    
+                    if (data.audio_url) {
+                        document.getElementById('audio').src = data.audio_url;
+                        document.getElementById('audio').style.display = 'block';
+                    }
+                } else {
                     document.getElementById('audio').src = URL.createObjectURL(await res.blob());
                     document.getElementById('audio').style.display = 'block';
-                } else {
-                    alert("No text found!");
                 }
+            } else {
+                alert("No text found!");
+            }
             });
-        }
+    }
+    checkTranslation();
     </script>
 </body>
 </html>
