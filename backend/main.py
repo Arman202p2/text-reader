@@ -60,7 +60,22 @@ LANG_CODE_MAP = {
     'jpn': 'ja',
     'chi_sim': 'zh-cn',
     'ara': 'ar',
-    'hin': 'hi'
+    'hin': 'hi',
+    'asm': 'as',
+    'ben':'bn',
+    'guj': 'gu',
+    'kan': 'kn',
+    'mal': 'ml',
+    'mar':'mr',
+    'mni': 'mni',
+    'ori': 'or',
+    'pan': 'pa',
+    'san': 'sa',
+    'sat':'sat',
+    'snd':'sd',
+    'tam': 'ta',
+    'tel': 'te',
+    'urd': 'ur'
 }
 
 @app.get("/", response_class=HTMLResponse)
