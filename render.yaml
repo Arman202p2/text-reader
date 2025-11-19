@@ -1,0 +1,21 @@
+# Exported from Render on 2025-11-19T10:17:38Z
+version: "1"
+services:
+- type: web
+  name: text-reader-1
+  runtime: docker
+  repo: https://github.com/Arman202p2/text-reader
+  plan: free
+  envVars:
+  - key: TESSDATA_PREFIX
+    sync: false
+  - key: TESSERACT_PATH
+    sync: false
+  - key: TESSERACT_LANG_DATA_PATH
+    sync: false
+  - key: FRONTEND_URL
+    sync: false
+  region: oregon
+  dockerContext: .
+  dockerfilePath: Dockerfile
+  autoDeployTrigger: commit

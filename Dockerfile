@@ -40,7 +40,7 @@ WORKDIR /app
 
 # Copy backend and frontend
 COPY backend/ ./backend
-COPY backend/frontend ./backend/frontend 
+COPY backend/frontend ./frontend 
 
 # Install Python dependencies
 COPY backend/requirements.txt .
