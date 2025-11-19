@@ -30,8 +30,8 @@ RUN wget https://github.com/tesseract-ocr/tessdata/raw/main/eng.traineddata -O /
     wget https://github.com/tesseract-ocr/tessdata/raw/main/por.traineddata -O /usr/share/tesseract-ocr/tessdata/por.traineddata && \
     wget https://github.com/tesseract-ocr/tessdata/raw/main/rus.traineddata -O /usr/share/tesseract-ocr/tessdata/rus.traineddata && \
     wget https://github.com/tesseract-ocr/tessdata/raw/main/jpn.traineddata -O /usr/share/tesseract-ocr/tessdata/jpn.traineddata && \
-    wget https://github.com/tesseract-ocr/tessdata/raw/main/chi_sim.traineddata -O /usr/share/tesseract-ocr/tessdata/chi_sim.traineddata
-
+    wget https://github.com/tesseract-ocr/tessdata/raw/main/chi_sim.traineddata -O /usr/share/tesseract-ocr/tessdata/chi_sim.traineddata && \
+    wget https://github.com/tesseract-ocr/tessdata/raw/main/ara.traineddata -O /usr/share/tesseract-ocr/tessdata/ara.traineddata
 # Verify installation
 RUN ls -la /usr/share/tesseract-ocr/tessdata/ && \
     tesseract --list-langs
