@@ -31,7 +31,20 @@ RUN wget https://github.com/tesseract-ocr/tessdata/raw/main/eng.traineddata -O /
     wget https://github.com/tesseract-ocr/tessdata/raw/main/rus.traineddata -O /usr/share/tesseract-ocr/tessdata/rus.traineddata && \
     wget https://github.com/tesseract-ocr/tessdata/raw/main/jpn.traineddata -O /usr/share/tesseract-ocr/tessdata/jpn.traineddata && \
     wget https://github.com/tesseract-ocr/tessdata/raw/main/chi_sim.traineddata -O /usr/share/tesseract-ocr/tessdata/chi_sim.traineddata && \
-    wget https://github.com/tesseract-ocr/tessdata/raw/main/ara.traineddata -O /usr/share/tesseract-ocr/tessdata/ara.traineddata
+    wget https://github.com/tesseract-ocr/tessdata/raw/main/asm.traineddata -O /usr/share/tesseract-ocr/tessdata/asm.traineddata &&\
+    wget https://github.com/tesseract-ocr/tessdata/raw/main/ben.traineddata -O /usr/share/tesseract-ocr/tessdata/ben.traineddata && \
+    wget https://github.com/tesseract-ocr/tessdata/raw/main/guj.traineddata -O /usr/share/tesseract-ocr/tessdata/guj.traineddata && \
+    wget https://github.com/tesseract-ocr/tessdata/raw/main/kan.traineddata -O /usr/share/tesseract-ocr/tessdata/kan.traineddata && \
+    wget https://github.com/tesseract-ocr/tessdata/raw/main/mal.traineddata -O /usr/share/tesseract-ocr/tessdata/mal.traineddata && \
+    wget https://github.com/tesseract-ocr/tessdata/raw/main/mar.traineddata -O /usr/share/tesseract-ocr/tessdata/mar.traineddata && \
+    wget https://github.com/tesseract-ocr/tessdata/raw/main/mni.traineddata -O /usr/share/tesseract-ocr/tessdata/mni.traineddata && \
+    wget https://github.com/tesseract-ocr/tessdata/raw/main/ori.traineddata -O /usr/share/tesseract-ocr/tessdata/ori.traineddata && \
+    wget https://github.com/tesseract-ocr/tessdata/raw/main/pan.traineddata -O /usr/share/tesseract-ocr/tessdata/pan.traineddata &&\
+    wget https://github.com/tesseract-ocr/tessdata/raw/main/san.traineddata -O /usr/share/tesseract-ocr/tessdata/san.traineddata && \
+    wget https://github.com/tesseract-ocr/tessdata/raw/main/snd.traineddata -O /usr/share/tesseract-ocr/tessdata/snd.traineddata && \
+    wget https://github.com/tesseract-ocr/tessdata/raw/main/tam.traineddata -O /usr/share/tesseract-ocr/tessdata/tam.traineddata && \
+    wget https://github.com/tesseract-ocr/tessdata/raw/main/tel.traineddata -O /usr/share/tesseract-ocr/tessdata/tel.traineddata && \
+    wget https://github.com/tesseract-ocr/tessdata/raw/main/urd.traineddata -O /usr/share/tesseract-ocr/tessdata/urd.traineddata
 
 # Verify installation
 RUN ls -la /usr/share/tesseract-ocr/tessdata/ && \
