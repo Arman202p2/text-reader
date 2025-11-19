@@ -18,7 +18,7 @@ from fastapi.responses import JSONResponse
 
 load_dotenv()  # loads variables from .env file
 
-PORT = int(os.getenv("PORT", 8080))
+PORT = int(os.getenv("PORT", 10000))
 
 
 if platform.system() == "Windows":
