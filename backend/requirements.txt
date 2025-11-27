@@ -2,8 +2,7 @@ fastapi
 uvicorn
 pillow
 pytesseract
-gtts
 python-multipart
 python-dotenv
 deep-translator
-pyttsx3
+TTS==0.22.0
