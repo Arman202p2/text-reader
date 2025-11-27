@@ -5,4 +5,5 @@ pytesseract
 python-multipart
 python-dotenv
 deep-translator
-TTS==0.22.0
+TTS
+torch==2.1.0
