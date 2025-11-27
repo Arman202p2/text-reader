@@ -1,5 +1,5 @@
 # Base image
-FROM python:3.13-slim
+FROM python:3.11-slim
 
 # Prevent Python from writing pyc files and buffering output
 ENV PYTHONDONTWRITEBYTECODE=1
