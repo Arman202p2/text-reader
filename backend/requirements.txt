@@ -6,3 +6,4 @@ gtts
 python-multipart
 python-dotenv
 deep-translator
+pyttsx3
