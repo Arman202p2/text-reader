@@ -159,7 +159,7 @@ async def ocr_tts(
             language=target_lang,
             file_path=audio_file
         )
-        print("Audio file created:", audio_file))
+        print("Audio file created:", audio_file)
 
         # 🆕 NEW: Return JSON response with all information
         # Save audio to a static location so we can reference it
