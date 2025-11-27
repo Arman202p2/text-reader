@@ -17,16 +17,6 @@ RUN apt-get update && apt-get install -y \
     libxrender1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install TTS dependencies
-RUN apt-get update && apt-get install -y \
-    alsa-utils \
-    espeak \
-    ffmpeg \
-    libespeak-ng1 \
-    && rm -rf /var/lib/apt/lists/*
-
-CMD ["python", "main.py"]
-
 # Create tessdata directory if it doesn't exist
 RUN mkdir -p /usr/share/tesseract-ocr/tessdata
 
