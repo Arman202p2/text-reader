@@ -3,7 +3,6 @@ from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 import pytesseract
-from gtts import gTTS
 import os
 from dotenv import load_dotenv
 from fastapi.responses import Response
@@ -15,7 +14,7 @@ import platform
 from deep_translator import GoogleTranslator
 from fastapi import Form
 from fastapi.responses import JSONResponse
-import pyttsx3
+from TTS.api import TTS
 
 load_dotenv()  # loads variables from .env file
 
@@ -37,6 +36,10 @@ pytesseract.pytesseract.tesseract_cmd = tesseract_path
 custom_config = f'--tessdata-dir "{tessdata_dir_path}"' if tessdata_dir_path else ""
 
 app = FastAPI()
+# Initialize Coqui TTS model
+# You can use a multilingual model
+tts = TTS(model_name="tts_models/multilingual/multi-dataset/your_tts")  
+# Example: "tts_models/multilingual/multi-dataset/your_tts"
 
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / "frontend", html=True), name="frontend")
 # Allow frontend to access backend from browser
@@ -132,18 +135,25 @@ async def ocr_tts(
         # Make audio file name
         audio_file = temp_file.replace(".png", ".wav")
 
-        engine = pyttsx3.init()
+        audio_file = temp_file.replace(".png", ".wav")  # Coqui outputs WAV
 
-        # Set voice based on language (only limited voices available realistically)
-        voices = engine.getProperty('voices')
-        for voice in voices:
-            if target_lang.lower() in voice.id.lower():  # try find language voice
-                engine.setProperty('voice', voice.id)
-                break
+# Optional: map target language to speaker
+        LANG_SPEAKER_MAP = {
+            "en": "alloy",
+            "hi": "alloy",
+            "es": "alloy",
+            "fr": "alloy"
+        }
+        speaker = LANG_SPEAKER_MAP.get(target_lang, "alloy")
 
-        engine.save_to_file(final_text, audio_file)
-        engine.runAndWait()
-        print("Audio file created:", audio_file)
+# Generate TTS audio
+        tts.tts_to_file(
+            text=final_text,
+            speaker=speaker,
+            language=target_lang,
+            file_path=audio_file
+        )
+        print("Audio file created:", audio_file))
 
         # 🆕 NEW: Return JSON response with all information
         # Save audio to a static location so we can reference it
