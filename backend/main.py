@@ -15,6 +15,7 @@ import platform
 from deep_translator import GoogleTranslator
 from fastapi import Form
 from fastapi.responses import JSONResponse
+import pyttsx3
 
 load_dotenv()  # loads variables from .env file
 
@@ -128,12 +129,20 @@ async def ocr_tts(
         audio_file = temp_file.replace(".png", ".mp3")
         
         # Map target_lang to gTTS format if needed
-        gtts_lang = target_lang
-        if target_lang == 'zh':
-            gtts_lang = 'zh-cn'  # gTTS uses 'zh-cn' for Chinese
-        
-        tts = gTTS(text=final_text, lang=gtts_lang)
-        tts.save(audio_file)
+        # Make audio file name
+        audio_file = temp_file.replace(".png", ".wav")
+
+        engine = pyttsx3.init()
+
+        # Set voice based on language (only limited voices available realistically)
+        voices = engine.getProperty('voices')
+        for voice in voices:
+            if target_lang.lower() in voice.id.lower():  # try find language voice
+                engine.setProperty('voice', voice.id)
+                break
+
+        engine.save_to_file(final_text, audio_file)
+        engine.runAndWait()
         print("Audio file created:", audio_file)
 
         # 🆕 NEW: Return JSON response with all information
