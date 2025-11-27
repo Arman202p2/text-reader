@@ -1,5 +1,5 @@
 # Base image
-FROM python:3.11-slim
+FROM python:3.13-slim
 
 # Prevent Python from writing pyc files and buffering output
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -16,6 +16,16 @@ RUN apt-get update && apt-get install -y \
     libxext6 \
     libxrender1 \
     && rm -rf /var/lib/apt/lists/*
+
+# Install TTS dependencies
+RUN apt-get update && apt-get install -y \
+    alsa-utils \
+    espeak \
+    ffmpeg \
+    libespeak-ng1 \
+    && rm -rf /var/lib/apt/lists/*
+
+CMD ["python", "main.py"]
 
 # Create tessdata directory if it doesn't exist
 RUN mkdir -p /usr/share/tesseract-ocr/tessdata
@@ -50,4 +60,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 ENV PORT=10000
 EXPOSE 10000
 
-CMD ["python", "backend/main.py"]
+# Start the FastAPI app
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "10000"]
