@@ -15,10 +15,16 @@ from deep_translator import GoogleTranslator
 from fastapi import Form
 from fastapi.responses import JSONResponse
 from TTS.api import TTS
-
-load_dotenv()  # loads variables from .env file
+import os
+import uvicorn
+from backend.main import app  # your FastAPI app
 
 PORT = int(os.getenv("PORT", 10000))
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=PORT)
+
+load_dotenv()  # loads variables from .env file
 
 
 if platform.system() == "Windows":
