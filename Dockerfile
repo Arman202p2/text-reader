@@ -27,18 +27,20 @@ RUN wget https://github.com/tesseract-ocr/tessdata/raw/main/eng.traineddata -O /
     wget https://github.com/tesseract-ocr/tessdata/raw/main/rus.traineddata -O /usr/share/tesseract-ocr/tessdata/rus.traineddata && \
     wget https://github.com/tesseract-ocr/tessdata/raw/main/jpn.traineddata -O /usr/share/tesseract-ocr/tessdata/jpn.traineddata && \
     wget https://github.com/tesseract-ocr/tessdata/raw/main/chi_sim.traineddata -O /usr/share/tesseract-ocr/tessdata/chi_sim.traineddata && \
-    wget https://github.com/tesseract-ocr/tessdata/raw/main/ara.traineddata -O /usr/share/tesseract-ocr/tessdata/ara.traineddata
+    wget https://github.com/tesseract-ocr/tessdata/raw/main/ara.traineddata -O /usr/share/tesseract-ocr/tessdata/ara.traineddata && \
+    wget https://github.com/tesseract-ocr/tessdata/raw/main/hin.traineddata -O /usr/share/tesseract-ocr/tessdata/hin.traineddata
 
 WORKDIR /app
 
-# Copy backend
-COPY backend ./backend
-
-# Install requirements
-COPY backend/requirements.txt .
+# Copy requirements and install first (for better caching)
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy all application files
+COPY . .
+
 EXPOSE 10000
+
 ENV PORT=10000
 
 CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "10000"]
