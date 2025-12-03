@@ -33,23 +33,38 @@ class RecordVideo(QtCore.QObject):
     image_data = QtCore.pyqtSignal(np.ndarray)
 
     def __init__(self, camera_port=0, parent=None):
+        """Initializes the RecordVideo object.
+
+        Args:
+            camera_port (int): The port of the camera to use.
+            parent (QtCore.QObject): The parent object.
+        """
         super().__init__(parent)
         self.camera = cv2.VideoCapture(camera_port)
 
         self.timer = QtCore.QBasicTimer()
 
     def start_recording(self):
+        """Starts the video recording."""
         self.timer.start(0, self)
 
-    
     def timerEvent(self, event):
-        if (event.timerId() != self.timer.timerId()):
+        """Handles the timer event to capture frames from the camera.
+
+        Args:
+            event (QtCore.QTimerEvent): The timer event.
+        """
+        if event.timerId() != self.timer.timerId():
             return
 
         read, data = self.camera.read()
         if read:
             self.image_data.emit(data)
+
     def framesave(self):
+        """Saves a frame from the camera, performs OCR, and converts the
+        text to speech.
+        """
         save_path = os.path.join(os.path.expanduser("~"), "Documents", "a.png")
 
         read, data = self.camera.read()
@@ -100,49 +115,71 @@ class RecordVideo(QtCore.QObject):
 
 class FaceDetectionWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
+        """Initializes the FaceDetectionWidget object.
+
+        Args:
+            parent (QtWidgets.QWidget): The parent widget.
+        """
         super().__init__(parent)
         self.image = QtGui.QImage()
         self._red = (0, 0, 255)
         self._width = 2
         self._min_size = (30, 30)
 
-
     def image_data_slot(self, image_data):
+        """Receives the image data from the camera and updates the widget.
 
-
-        
+        Args:
+            image_data (np.ndarray): The image data.
+        """
         self.image = self.get_qimage(image_data)
         if self.image.size() != self.size():
             self.setFixedSize(self.image.size())
 
         self.update()
-    
-        
-        
+
     def get_qimage(self, image: np.ndarray):
+        """Converts a NumPy array to a QImage.
+
+        Args:
+            image (np.ndarray): The image to convert.
+
+        Returns:
+            QtGui.QImage: The converted image.
+        """
         height, width, colors = image.shape
         bytesPerLine = 3 * width
         QImage = QtGui.QImage
 
-        image = QImage(image.data,
-                       width,
-                       height,
-                       bytesPerLine,
-                       QImage.Format_RGB888)
+        image = QImage(
+            image.data, width, height, bytesPerLine, QImage.Format_RGB888
+        )
 
         image = image.rgbSwapped()
         return image
 
     def paintEvent(self, event):
+        """Handles the paint event to draw the image on the widget.
+
+        Args:
+            event (QtGui.QPaintEvent): The paint event.
+        """
         painter = QtGui.QPainter(self)
         painter.drawImage(0, 0, self.image)
         self.image = QtGui.QImage()
 
 
 class MainWidget(QtWidgets.QWidget):
+    """The main widget of the application."""
+
     def __init__(self, parent=None):
+        """Initializes the MainWidget object.
+
+        Args:
+            parent (QtWidgets.QWidget): The parent widget.
+        """
         super().__init__(parent)
-        
+
         self.face_detection_widget = FaceDetectionWidget()
 
         # TODO: set video port
@@ -154,20 +191,20 @@ class MainWidget(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout()
 
         layout.addWidget(self.face_detection_widget)
-        self.run_button = QtWidgets.QPushButton('Start')
+        self.run_button = QtWidgets.QPushButton("Start")
         layout.addWidget(self.run_button)
 
         self.run_button.clicked.connect(self.record_video.start_recording)
 
-        self.screenshot = QtWidgets.QPushButton('Snap Shot')
+        self.screenshot = QtWidgets.QPushButton("Snap Shot")
         layout.addWidget(self.screenshot)
 
         self.screenshot.clicked.connect(self.record_video.framesave)
         self.setLayout(layout)
 
 
-    
 def main():
+    """The main function of the application."""
     app = QtWidgets.QApplication(sys.argv)
 
     main_window = QtWidgets.QMainWindow()

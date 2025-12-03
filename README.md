@@ -1,46 +1,68 @@
-# Python-Application-for-Camera-OCR-then-text-to-speech
-"Try the website https://text-reader-production.up.railway.app/"
+# OCR to Speech
 
-Python Application for to capture image using Camera then apply OCR to recognize the text,then text to speech audio. This program made for spanish language ocr and spanish language text to speech. With little change in language in code you can run on other languages.
+This project is a multi-faceted application that performs Optical Character Recognition (OCR) on images and converts the extracted text to speech. It consists of three main components:
 
+*   **Backend**: A FastAPI application that provides an API for OCR and text-to-speech conversion.
+*   **Desktop**: A PyQt5 desktop application that allows users to capture images from their camera, perform OCR, and listen to the extracted text.
+*   **Frontend**: A simple web interface that allows users to upload an image and listen to the extracted text.
 
-- Download Anaconda3 latest version
-- Download Tesseract OCR from this link windows 10 x64(https://digi.bib.uni-mannheim.de/tesseract/tesseract-ocr-w64-setup-v4.1.0.20190314.exe)
+## Backend
 
-      > Install additional languages spa during installation.
-      > Add the Tesseract directory in the code if directory of installation is change from default: C:\Program Files\Tesseract-OCR
+The backend is a FastAPI application that provides a single endpoint, `/ocr-tts/`, for performing OCR and text-to-speech conversion.
 
-- Open The Anaconda prompt and install these libraries
-    
-      > Python 			(Tested Version:3.6.5)    
-      > cv2				(Tested Version:3.4.3)
-      > PyQt5				(Default)
-      > PIL				(Tested Version:5.1.0)
-      > pytesseract			(Default pip installation)
-      > gtts				(Tested Version:2.0.3)
+### Setup
 
-- Run the code using anaconda prompt by changing the directory to where the code file is placed
-	  
-      > Anaconda Prompt: python ocr_text_to_speech.py
+1.  Install the required Python packages:
+    ```bash
+    pip install -r backend/requirements.txt
+    ```
+2.  Install Tesseract OCR. For detailed instructions, see the official Tesseract documentation: [https://tesseract-ocr.github.io/tessdoc/Installation.html](https://tesseract-ocr.github.io/tessdoc/Installation.html)
+3.  Create a `.env` file in the `backend` directory with the following variables:
+    ```
+    TESSERACT_PATH=<path_to_tesseract_executable>
+    TESSERACT_LANG_DATA_PATH=<path_to_tessdata_directory>
+    ```
 
+### Usage
 
+1.  Start the backend server:
+    ```bash
+    uvicorn backend.main:app --host 0.0.0.0 --port 10000
+    ```
+2.  The API will be available at `http://localhost:10000`.
 
-- Click on the Start to Start the camera.
-![Application View](application_view/OCR_TO_SPEECH_Application_View.JPG)
-- Click on the Snap Shot button to take picture for ocr to speech conversion.
-    
-      > Check the Anaconda Prompt for details about Text Found
-      > Only do the speech if visible text found in the picture.
-## Author
+## Desktop
 
-Arman Sheikh  
-Email: your.email@example.com
-GitHub: [Arman202p2](https://github.com/Arman202p2)
+The desktop application is a PyQt5 application that allows users to capture images from their camera, perform OCR, and listen to the extracted text.
 
+### Setup
 
-pip install --upgrade gtts gtts-token
+1.  Install the required Python packages:
+    ```bash
+    pip install -r requirements.txt
+    ```
+2.  Install Tesseract OCR. For detailed instructions, see the official Tesseract documentation: [https://tesseract-ocr.github.io/tessdoc/Installation.html](https://tesseract-ocr.github.io/tessdoc/Installation.html)
+3.  Create a `.env` file in the `desktop` directory with the following variables:
+    ```
+    TESSERACT_PATH=<path_to_tesseract_executable>
+    TESSERACT_LANG_DATA_PATH=<path_to_tessdata_directory>
+    ```
 
+### Usage
 
+1.  Run the desktop application:
+    ```bash
+    python desktop/ocr_text_to_speech.py
+    ```
+2.  Click the "Start" button to start the camera.
+3.  Click the "Snap Shot" button to take a picture, perform OCR, and listen to the extracted text.
 
+## Frontend
 
+The frontend is a simple web interface that allows users to upload an image and listen to the extracted text.
 
+### Usage
+
+1.  Make sure the backend server is running.
+2.  Open the `frontend/index.html` file in your web browser.
+3.  Select an image file and click the "Convert" button.

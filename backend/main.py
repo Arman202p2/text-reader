@@ -26,7 +26,7 @@ if platform.system() == "Windows":
     tessdata_dir_path = os.getenv("TESSERACT_LANG_DATA_PATH", r"C:\Program Files\Tesseract-OCR\tessdata")
 else:
     tesseract_path = os.getenv("TESSERACT_PATH", "/usr/bin/tesseract")
-    tessdata_dir_path = os.getenv("TESSERACT_LANG_DATA_PATH", "/usr/share/tesseract-ocr/tessdata")
+    tessdata_dir_path = os.getenv("TESSERACT_LANG_DATA_PATH", "/usr/share/tesseract-ocr/5/tessdata")
 print("Running on:", platform.system())
 print("Tesseract path:", tesseract_path)
 print("Tessdata path:", tessdata_dir_path)
@@ -65,24 +65,50 @@ LANG_CODE_MAP = {
 
 @app.get("/", response_class=HTMLResponse)
 def home():
+    """Serves the frontend's index.html file.
+
+    Returns:
+        FileResponse: The frontend's index.html file.
+    """
     return FileResponse(frontend_index)
 
-# Serve a default favicon (16x16 blank icon)
+
 @app.get("/favicon.ico")
 async def favicon():
+    """Serves a default favicon.
+
+    Returns:
+        Response: A 16x16 transparent favicon.
+    """
     # A tiny transparent 16x16 favicon in bytes
     favicon_bytes = bytes.fromhex(
         "00000100010010100000010010000000000100000001000000000000000000000000000000"
     )
     return Response(content=favicon_bytes, media_type="image/x-icon")
 
+
 @app.post("/ocr-tts/")
 async def ocr_tts(
     file: UploadFile = File(...),
-    source_lang: str = Form("eng"),      #  NEW: Source language for OCR
-    target_lang: str = Form("en"),       #  NEW: Target language for TTS
-    translate: str = Form("false")       #  NEW: Whether to translate
+    source_lang: str = Form("eng"),
+    target_lang: str = Form("en"),
+    translate: str = Form("false"),
 ):
+    """
+    Performs OCR on an uploaded image, optionally translates the text, and
+    returns the text and a text-to-speech audio file.
+
+    Args:
+        file (UploadFile): The image file to process.
+        source_lang (str): The source language for OCR.
+        target_lang (str): The target language for TTS.
+        translate (str): Whether to translate the text.
+
+    Returns:
+        JSONResponse: A JSON response containing the extracted text,
+                      the URL to the audio file, and optionally the
+                      translated text.
+    """
 
     try:
         print("=" * 50)
