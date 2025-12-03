@@ -2,24 +2,41 @@
 <html>
 <body>
     <h2>OCR to Speech Web App</h2>
-    <input type="file" id="file" accept="image/*">
+    <!-- File input for image selection -->
+    <input type="file" id="file" accept="image/*" />
+    <!-- Button to trigger the conversion -->
     <button onclick="upload()">Convert</button>
-    <audio id="audio" controls style="display:none"></audio>
+    <!-- Audio player, initially hidden -->
+    <audio id="audio" controls style="display: none"></audio>
     <script>
-    async function upload() {
-        let fileInput = document.getElementById('file');
-        if (!fileInput.files.length) { alert("Select an image"); return; }
-        let form = new FormData();
-        form.append('file', fileInput.files[0]);
-        let res = await fetch('/ocr-tts/', { method: 'POST', body: form });
-        if (res.ok) {
-            let audio = document.getElementById('audio');
-            audio.src = URL.createObjectURL(await res.blob());
-            audio.style.display = "block";
-        } else {
-            alert("No text found or server error!");
+      // Function to upload the image and handle the response
+      async function upload() {
+        // Get the file input element
+        let fileInput = document.getElementById("file");
+        // Check if a file is selected
+        if (!fileInput.files.length) {
+          alert("Select an image");
+          return;
         }
-    }
+        // Create a new FormData object
+        let form = new FormData();
+        // Append the selected file to the form data
+        form.append("file", fileInput.files[0]);
+        // Send a POST request to the /ocr-tts/ endpoint
+        let res = await fetch("/ocr-tts/", { method: "POST", body: form });
+        // If the request is successful
+        if (res.ok) {
+          // Get the audio element
+          let audio = document.getElementById("audio");
+          // Create a blob URL from the response and set it as the audio source
+          audio.src = URL.createObjectURL(await res.blob());
+          // Display the audio player
+          audio.style.display = "block";
+        } else {
+          // If the request fails, show an alert
+          alert("No text found or server error!");
+        }
+      }
     </script>
 </body>
 </html>

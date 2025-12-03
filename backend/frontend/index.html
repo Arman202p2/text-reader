@@ -214,8 +214,9 @@ button:disabled {
     <div class="container">
         <h2>OCR to Speech</h2>
         <p class="subtitle">Transform images into spoken words</p>
-         <label class="select-label">Source Language (OCR)</label>
-        <select id="sourceLanguage">
+        <!-- Source language selection -->
+        <label class="select-label">Source Language (OCR)</label>
+        <select id="sourceLanguage" onchange="checkTranslation()">
             <option value="eng">English</option>
             <option value="spa">Spanish</option>
             <option value="fra">French</option>
@@ -228,8 +229,9 @@ button:disabled {
             <option value="ara">Arabic</option>
             <option value="hin">Hindi</option>
         </select>
+        <!-- Target language selection -->
         <label class="select-label">Target Language (Speech)</label>
-        <select id="targetLanguage">
+        <select id="targetLanguage" onchange="checkTranslation()">
             <option value="en">English</option>
             <option value="es">Spanish</option>
             <option value="fr">French</option>
@@ -248,26 +250,34 @@ button:disabled {
             🌐 Translation will be applied
         </div>
 
+        <!-- File input -->
         <input type="file" id="file" accept="image/*">
+        <!-- Convert button -->
         <button onclick="upload()">Convert</button>
         
+        <!-- Extracted text display -->
         <div id="extractedText" class="text-display">
             <h3>Extracted Text:</h3>
             <p id="extractedTextContent"></p>
         </div>
+        <!-- Translated text display -->
         <div id="translatedText" class="text-display">
             <h3>Translated Text:</h3>
             <p id="translatedTextContent"></p>
         </div>
 
+        <!-- Camera controls -->
         <button class="camera-btn" onclick="openCamera()"> Use Camera Instead</button>
         <video id="video" style="display:none; width: 100%; border-radius: 12px;"></video>
         <button id="captureBtn" style="display:none;" onclick="captureImage()">Capture & Convert</button>
         
+        <!-- Audio player -->
         <audio id="audio" controls style="display:none"></audio>
     </div>
     <script>
+    // Stream for camera access
     let stream;
+    // Mapping of OCR language codes to TTS language codes
     const langMapping = {
         'eng': 'en',
         'spa': 'es',
@@ -282,6 +292,9 @@ button:disabled {
         'hin': 'hi',
     };
 
+    /**
+     * Checks if a translation is needed and shows/hides the translation indicator.
+     */
     function checkTranslation() {
         const sourceLanguage = document.getElementById('sourceLanguage').value;
         const targetLanguage = document.getElementById('targetLanguage').value;
@@ -294,32 +307,42 @@ button:disabled {
             indicator.classList.remove('show');
         }
     }
+
+    /**
+     * Uploads the selected image file, performs OCR and TTS, and displays the results.
+     */
     async function upload() {
             let fileInput = document.getElementById('file');
             let btn = event.target;
             if (!fileInput.files.length) { alert("Select an image"); return; }
             
+            // Show loading indicator
             btn.classList.add('loading');
             btn.disabled = true;
 
+            // Create form data
             let form = new FormData();
             form.append('file', fileInput.files[0]);
 
+            // Get languages and check if translation is needed
             const sourceLanguage = document.getElementById('sourceLanguage').value;
             const targetLanguage = document.getElementById('targetLanguage').value;
             form.append('source_lang', sourceLanguage);
             form.append('target_lang', targetLanguage);
-
             const needsTranslation = langMapping[sourceLanguage] !== targetLanguage;
             form.append('translate', needsTranslation ? 'true' : 'false');
             
+            // Send request to the backend
             let res = await fetch('/ocr-tts/', { method: 'POST', body: form });
 
+            // Hide loading indicator
             btn.classList.remove('loading');
             btn.disabled = false;
-                if (res.ok) {
+
+            if (res.ok) {
                 const contentType = res.headers.get('content-type');
                 
+                // Handle JSON response
                 if (contentType && contentType.includes('application/json')) {
                     const data = await res.json();
                     
@@ -354,10 +377,14 @@ button:disabled {
             }
         }
 
+        /**
+         * Opens the camera and displays the video stream.
+         */
         async function openCamera() {
             const video = document.getElementById('video');
             const captureBtn = document.getElementById('captureBtn');
             
+            // Get camera stream
             stream = await navigator.mediaDevices.getUserMedia({ video: true });
             video.srcObject = stream;
             video.style.display = 'block';
@@ -365,66 +392,81 @@ button:disabled {
             video.play();
         }
 
+        /**
+         * Captures an image from the camera, performs OCR and TTS, and displays the results.
+         */
         function captureImage() {
             const video = document.getElementById('video');
             const btn = document.getElementById('captureBtn');
             const canvas = document.createElement('canvas');
 
+            // Show loading indicator
             btn.classList.add('loading');
             btn.disabled = true;
 
+            // Draw video frame to canvas
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             canvas.getContext('2d').drawImage(video, 0, 0);
             
+            // Convert canvas to blob and send to backend
             canvas.toBlob(async (blob) => {
                 const form = new FormData();
                 form.append('file', blob, 'camera-capture.png');
 
+                // Get languages and check if translation is needed
                 const sourceLanguage = document.getElementById('sourceLanguage').value;
-            const targetLanguage = document.getElementById('targetLanguage').value;
-            form.append('source_lang', sourceLanguage);
-            form.append('target_lang', targetLanguage);
-            
-            const needsTranslation = langMapping[sourceLanguage] !== targetLanguage;
-            form.append('translate', needsTranslation ? 'true' : 'false');
+                const targetLanguage = document.getElementById('targetLanguage').value;
+                form.append('source_lang', sourceLanguage);
+                form.append('target_lang', targetLanguage);
+                const needsTranslation = langMapping[sourceLanguage] !== targetLanguage;
+                form.append('translate', needsTranslation ? 'true' : 'false');
                 
+                // Send request to the backend
                 let res = await fetch('/ocr-tts/', { method: 'POST', body: form });
 
+                // Hide loading indicator
                 btn.classList.remove('loading');
                 btn.disabled = false;
                 
                 if (res.ok) {
-                const contentType = res.headers.get('content-type');
-                
-                if (contentType && contentType.includes('application/json')) {
-                    const data = await res.json();
+                    const contentType = res.headers.get('content-type');
                     
-                    if (data.extracted_text) {
-                        document.getElementById('extractedTextContent').textContent = data.extracted_text;
-                        document.getElementById('extractedText').classList.add('show');
-                    }
-                    
-                    if (data.translated_text && needsTranslation) {
-                        document.getElementById('translatedTextContent').textContent = data.translated_text;
-                        document.getElementById('translatedText').classList.add('show');
+                    // Handle JSON response
+                    if (contentType && contentType.includes('application/json')) {
+                        const data = await res.json();
+
+                        // Show extracted text
+                        if (data.extracted_text) {
+                            document.getElementById('extractedTextContent').textContent = data.extracted_text;
+                            document.getElementById('extractedText').classList.add('show');
+                        }
+
+                        // Show translated text if translation occurred
+                        if (data.translated_text && needsTranslation) {
+                            document.getElementById('translatedTextContent').textContent = data.translated_text;
+                            document.getElementById('translatedText').classList.add('show');
+                        } else {
+                            document.getElementById('translatedText').classList.remove('show');
+                        }
+
+                        // Play audio if available
+                        if (data.audio_url) {
+                            document.getElementById('audio').src = data.audio_url;
+                            document.getElementById('audio').style.display = 'block';
+                        }
                     } else {
-                        document.getElementById('translatedText').classList.remove('show');
-                    }
-                    
-                    if (data.audio_url) {
-                        document.getElementById('audio').src = data.audio_url;
+                        // Fallback for audio-only response
+                        document.getElementById('audio').src = URL.createObjectURL(await res.blob());
                         document.getElementById('audio').style.display = 'block';
                     }
                 } else {
-                    document.getElementById('audio').src = URL.createObjectURL(await res.blob());
-                    document.getElementById('audio').style.display = 'block';
+                    alert("No text found!");
                 }
-            } else {
-                alert("No text found!");
-            }
             });
     }
+
+    // Initial check for translation
     checkTranslation();
     </script>
 </body>
